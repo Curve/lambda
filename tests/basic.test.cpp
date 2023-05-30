@@ -27,9 +27,25 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     REQUIRE(test == 2);
 
-    static_assert(lambda_ptr::detail::CaptureLambda<decltype([&] {})>);
-    static_assert(lambda_ptr::detail::CaptureLambda<decltype([=] {})>);
+    some_c_function(lambda_ptr::pointer_to<void(const char *, int)>([&](auto a, auto b) {
+        REQUIRE(strcmp(a, "test") == 0);
+        REQUIRE(b == 1337);
+        test = 3;
+    }));
 
-    static_assert(not lambda_ptr::detail::CaptureLambda<decltype([] {})>);
-    static_assert(not lambda_ptr::detail::CaptureLambda<std::function<void(const char *, int)>>);
+    REQUIRE(test == 3);
+
+    some_c_function(lambda_ptr::pointer_to<void (*)(const char *, int)>([&](auto a, auto b) {
+        REQUIRE(strcmp(a, "test") == 0);
+        REQUIRE(b == 1337);
+        test = 4;
+    }));
+
+    REQUIRE(test == 4);
+
+    static_assert(lambda_ptr::detail::capture_lambda<decltype([&] {})>);
+    static_assert(lambda_ptr::detail::capture_lambda<decltype([=] {})>);
+
+    static_assert(not lambda_ptr::detail::capture_lambda<decltype([] {})>);
+    static_assert(not lambda_ptr::detail::capture_lambda<std::function<void(const char *, int)>>);
 }
