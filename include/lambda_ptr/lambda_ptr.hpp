@@ -7,57 +7,76 @@ namespace lambda_ptr
 {
     namespace detail
     {
-        template <typename T> using pointer_if_not = std::conditional_t<std::is_pointer_v<T>, T, std::add_pointer_t<T>>;
-
         template <typename T>
-        concept assignable = requires(T a, T b) { a = b; };
+        concept is_function = requires(T t) {
+            []<typename R, typename... A>(std::function<R(A...)> &) {
+            }(t);
+        };
 
-        template <typename T>
-        concept is_function = requires(T t) { []<typename R, typename... A>(std::function<R(A...)> &) {}(t); };
+        template <typename Lambda, typename Return, typename Args>
+        concept invocable_lambda = not is_function<Lambda> and not std::is_copy_assignable_v<Lambda> and //
+                                   requires(Args args) {
+                                       []<typename... T>(std::tuple<T...> &)
+                                           requires std::same_as<std::invoke_result_t<Lambda, T...>, Return>
+                                       {
+                                       }
+                                       (args);
+                                   };
 
-        template <typename T>
-        concept capture_lambda = !is_function<T> && !assignable<T> && requires(T t) { &T::operator(); };
+        template <typename Lambda>
+        concept is_lambda = invocable_lambda<Lambda, boost::callable_traits::return_type_t<Lambda>,
+                                             boost::callable_traits::args_t<Lambda>>;
 
-        template <typename T, typename... A>
-        concept generic_lambda = !is_function<T> && !assignable<T> && std::invocable<T, A...>;
+        template <typename... T>
+        struct user_data : std::tuple<T...>
+        {
+            using std::tuple<T...>::tuple;
 
-        template <typename Signature, typename Lambda>
-        concept signature_lambda = requires(pointer_if_not<Signature> signature) {
-            []<typename R, typename... A>(R(*)(A...))
-                requires generic_lambda<Lambda, A...>
+            // NOLINTNEXTLINE(google-runtime-operator)
+            void *operator&()
             {
+                return reinterpret_cast<void *>(this);
             }
-            (signature);
+
+            static std::tuple<T...> &from(void *data)
+            {
+                return *reinterpret_cast<user_data *>(data);
+            }
         };
     } // namespace detail
 
-    template <typename Lambda>
-        requires detail::capture_lambda<Lambda>
+    template <typename Return, typename Args, typename Lambda>
+        requires detail::invocable_lambda<Lambda, Return, Args>
     auto pointer_to(Lambda &&lambda)
     {
         static auto static_lambda = std::forward<Lambda>(lambda);
-        using args_t = boost::callable_traits::args_t<Lambda>;
 
         return []<typename... T>(std::tuple<T...>) consteval {
-            return [](T... args) { return static_lambda(std::forward<T>(args)...); };
-        }(args_t{});
-    }
-
-    template <typename R, typename... T, typename Lambda>
-        requires detail::generic_lambda<Lambda, T...>
-    auto pointer_to(Lambda &&lambda)
-    {
-        static auto static_lambda = std::forward<Lambda>(lambda);
-        return [](T... args) -> R { return static_lambda(std::forward<T>(args)...); };
+            return [](T... args) -> Return {
+                return static_lambda(std::forward<T>(args)...);
+            };
+        }(Args{});
     }
 
     template <typename Signature, typename Lambda>
-        requires detail::signature_lambda<Signature, Lambda>
+        requires detail::invocable_lambda<Lambda, boost::callable_traits::return_type_t<Signature>,
+                                          boost::callable_traits::args_t<Signature>>
     auto pointer_to(Lambda &&lambda)
     {
-        static auto static_lambda = std::forward<Lambda>(lambda);
-        return []<typename R, typename... T>(R (*)(T...)) consteval {
-            return [](T... args) -> R { return static_lambda(std::forward<T>(args)...); };
-        }(detail::pointer_if_not<Signature>{});
+        return pointer_to<boost::callable_traits::return_type_t<Signature>, boost::callable_traits::args_t<Signature>,
+                          Lambda>(std::forward<Lambda>(lambda));
+    }
+
+    template <typename Lambda>
+        requires detail::is_lambda<Lambda>
+    auto pointer_to(Lambda &&lambda)
+    {
+        return pointer_to<Lambda, Lambda>(std::forward<Lambda>(lambda));
+    }
+
+    template <typename... T>
+    auto user_data(T &&...args)
+    {
+        return detail::user_data<T...>{std::forward<T>(args)...};
     }
 } // namespace lambda_ptr
