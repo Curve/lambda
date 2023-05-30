@@ -51,7 +51,7 @@ namespace lambda_ptr
     {
         static auto static_lambda = std::forward<Lambda>(lambda);
 
-        return []<typename... T>(std::tuple<T...>) consteval {
+        return []<typename... T>(const std::tuple<T...> &) consteval {
             return [](T... args) -> Return {
                 return static_lambda(std::forward<T>(args)...);
             };
