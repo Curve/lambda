@@ -24,11 +24,11 @@ jobs:
       - name: Compile
         run: >
           mkdir build && cd build
-          && cmake .. -Dlambda_ptr_tests=ON 
+          && cmake .. -Dlambda_tests=ON 
           && cmake --build . --config Debug
 
       - name: Run Tests
-        run: "./build/lambda_ptr_tests"
+        run: "./build/lambda_tests"
 
   test-windows:
     runs-on: windows-2022
@@ -44,8 +44,8 @@ jobs:
       - name: Compile
         run: >
           mkdir build && cd build
-          && cmake .. -Dlambda_ptr_tests=ON 
+          && cmake .. -Dlambda_tests=ON 
           && cmake --build . --config Debug
 
       - name: Run Tests
-        run: "./build/Debug/lambda_ptr_tests.exe"
+        run: "./build/Debug/lambda_tests.exe"

@@ -6,7 +6,7 @@
 
 <div align="center"> 
 
-### lambda_ptr
+### lambda
 
 A utility for working with C-Libraries from C++
 
@@ -30,7 +30,7 @@ extern "C" void some_c_function(void (*callback)(int a))
 
 std::string some_string;
 
-some_c_function(lambda_ptr::pointer_to([&](int)
+some_c_function(lambda::pointer_to([&](int)
 {
     some_string = "Captured by reference!";
 }));
@@ -46,7 +46,7 @@ extern "C" void some_c_function(void (*callback)(int a, void* user_data), void* 
 }
 
 std::string some_string;
-auto user_data = lambda_ptr::user_data(some_string);
+auto user_data = lambda::user_data(some_string);
 
 some_c_function(+[](int a, void* data) {
     auto &[some_string] = decltype(user_data)::from(data);
@@ -69,19 +69,19 @@ some_c_function(+[](int a, void* data) {
 
     ```cmake
     include(FetchContent)
-    FetchContent_Declare(lambda_ptr GIT_REPOSITORY "https://github.com/Curve/lambda_ptr")
+    FetchContent_Declare(lambda GIT_REPOSITORY "https://github.com/Curve/lambda")
 
-    FetchContent_MakeAvailable(lambda_ptr)
-    target_link_libraries(<YourLibrary> lambda_ptr)
+    FetchContent_MakeAvailable(lambda)
+    target_link_libraries(<YourLibrary> lambda::ptr)
     ```
 
 - Git Submodule
 
     ```bash
-    git submodule add "https://github.com/Curve/lambda_ptr"
+    git submodule add "https://github.com/Curve/lambda"
     ```
     ```cmake
     # Somewhere in your CMakeLists.txt
-    add_subdirectory("<path_to_lambda_ptr>")
-    target_link_libraries(<YourLibrary> lambda_ptr)
+    add_subdirectory("<path_to_lambda>")
+    target_link_libraries(<YourLibrary> lambda::ptr)
     ```

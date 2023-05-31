@@ -3,7 +3,7 @@
 #include <functional>
 #include <boost/callable_traits.hpp>
 
-namespace lambda_ptr
+namespace lambda
 {
     namespace detail
     {
@@ -19,8 +19,7 @@ namespace lambda_ptr
                                        []<typename... T>(std::tuple<T...> &)
                                            requires std::same_as<std::invoke_result_t<Lambda, T...>, Return>
                                        {
-                                       }
-                                       (args);
+                                       }(args);
                                    };
 
         template <typename Lambda>
@@ -79,4 +78,4 @@ namespace lambda_ptr
     {
         return detail::user_data<T...>{std::forward<T>(args)...};
     }
-} // namespace lambda_ptr
+} // namespace lambda

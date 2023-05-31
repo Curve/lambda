@@ -1,5 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
-#include <lambda_ptr/lambda_ptr.hpp>
+#include <lambda/lambda.hpp>
 #include <functional>
 
 extern "C" void some_c_function(void (*callback)(const char *a, int b))
@@ -16,7 +16,7 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 {
     int test = 0;
 
-    some_c_function(lambda_ptr::pointer_to([&](const char *a, int b) {
+    some_c_function(lambda::pointer_to([&](const char *a, int b) {
         REQUIRE(strcmp(a, "test") == 0);
         REQUIRE(b == 1337);
         test = 1;
@@ -24,7 +24,7 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     REQUIRE(test == 1);
 
-    some_c_function(lambda_ptr::pointer_to<void(const char *, int)>([&](auto a, auto b) {
+    some_c_function(lambda::pointer_to<void(const char *, int)>([&](auto a, auto b) {
         REQUIRE(strcmp(a, "test") == 0);
         REQUIRE(b == 1337);
         test = 2;
@@ -32,7 +32,7 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     REQUIRE(test == 2);
 
-    some_c_function(lambda_ptr::pointer_to<void (*)(const char *, int)>([&](auto a, auto b) {
+    some_c_function(lambda::pointer_to<void (*)(const char *, int)>([&](auto a, auto b) {
         REQUIRE(strcmp(a, "test") == 0);
         REQUIRE(b == 1337);
         test = 3;
@@ -40,7 +40,7 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     REQUIRE(test == 3);
 
-    auto user_data = lambda_ptr::user_data(test);
+    auto user_data = lambda::user_data(test);
 
     some_c_function_with_user_data(
         [](const char *, int, void *data) {
@@ -51,9 +51,9 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     REQUIRE(test == 4);
 
-    static_assert(lambda_ptr::detail::is_lambda<decltype([&] {})>);
-    static_assert(lambda_ptr::detail::is_lambda<decltype([=] {})>);
+    static_assert(lambda::detail::is_lambda<decltype([&] {})>);
+    static_assert(lambda::detail::is_lambda<decltype([=] {})>);
 
-    static_assert(not lambda_ptr::detail::is_lambda<decltype([] {})>);
-    static_assert(not lambda_ptr::detail::is_lambda<std::function<void(const char *, int)>>);
+    static_assert(not lambda::detail::is_lambda<decltype([] {})>);
+    static_assert(not lambda::detail::is_lambda<std::function<void(const char *, int)>>);
 }
