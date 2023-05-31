@@ -31,13 +31,30 @@ namespace lambda
         {
             using std::tuple<T...>::tuple;
 
-            // NOLINTNEXTLINE(google-runtime-operator)
-            void *operator&()
+          public:
+            std::tuple<T...> &get()
+            {
+                return *static_cast<std::tuple<T...> *>(this);
+            }
+
+            void *ptr()
             {
                 return reinterpret_cast<void *>(this);
             }
 
-            static std::tuple<T...> &from(void *data)
+          public:
+            operator void *()
+            {
+                return ptr();
+            }
+
+            operator std::tuple<T...> &()
+            {
+                return get();
+            }
+
+          public:
+            static user_data &from(void *data)
             {
                 return *reinterpret_cast<user_data *>(data);
             }

@@ -50,10 +50,10 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     some_c_function_with_user_data(
         [](const char *, int, void *data) {
-            auto &[test] = decltype(user_data)::from(data);
+            auto &[test] = decltype(user_data)::from(data).get();
             test = 4;
         },
-        &user_data);
+        user_data);
 
     REQUIRE(test == 4);
 
