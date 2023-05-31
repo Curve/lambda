@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.16)
 project(lambda_ptr LANGUAGES CXX VERSION 1.0)
 
 # --------------------------------------------------------------------------------------------------------
+# Warn about "outdated"* MSVC
+# * MSVC versions below 19.36 are affected by a bug which prevents this library from working
+# --------------------------------------------------------------------------------------------------------
+
+if (MSVC AND MSVC_VERSION LESS 1936)
+    message(FATAL_ERROR "[lambda] MSVC 19.36 or later is required (Current: ${MSVC_VERSION})")
+endif()
+
+# --------------------------------------------------------------------------------------------------------
 # Library options
 # --------------------------------------------------------------------------------------------------------
 
