@@ -16,27 +16,33 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 {
     int test = 0;
 
-    some_c_function(lambda::pointer_to([&](const char *a, int b) {
+    auto fn_ptr_1 = lambda::pointer_to([&](const char *a, int b) {
         REQUIRE(strcmp(a, "test") == 0);
         REQUIRE(b == 1337);
         test = 1;
-    }));
+    });
+
+    some_c_function(fn_ptr_1);
 
     REQUIRE(test == 1);
 
-    some_c_function(lambda::pointer_to<void(const char *, int)>([&](auto a, auto b) {
+    auto fn_ptr_2 = lambda::pointer_to<void(const char *, int)>([&](auto a, auto b) {
         REQUIRE(strcmp(a, "test") == 0);
         REQUIRE(b == 1337);
         test = 2;
-    }));
+    });
+
+    some_c_function(fn_ptr_2);
 
     REQUIRE(test == 2);
 
-    some_c_function(lambda::pointer_to<void (*)(const char *, int)>([&](auto a, auto b) {
+    auto fn_ptr_3 = lambda::pointer_to<void (*)(const char *, int)>([&](auto a, auto b) {
         REQUIRE(strcmp(a, "test") == 0);
         REQUIRE(b == 1337);
         test = 3;
-    }));
+    });
+
+    some_c_function(fn_ptr_3);
 
     REQUIRE(test == 3);
 

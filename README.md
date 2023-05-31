@@ -85,3 +85,47 @@ some_c_function(+[](int a, void* data) {
     add_subdirectory("<path_to_lambda>")
     target_link_libraries(<YourLibrary> lambda::ptr)
     ```
+
+---
+
+<div align="center"> 
+    
+### Windows
+
+</div>
+
+**Q:** Does this Library work on windows?  
+**A:** Yes
+
+**Q:** Does this library work with MSVC?  
+**A:** Kind of, beware that lambda captures on MSVC are broken¹ and MSVC Versions below 19.36 are affected by a bug that causes compilation errors.
+
+>¹: This bug has already been reported and will hopefully be fixed with a new MSVC update.
+
+<table>
+<tr>
+<th>❌ Broken</th>
+<th>✅ Working</th>
+</tr>
+<tr>
+<td>
+
+```cpp
+some_c_function(lambda::pointer_to([&]{/*...*/}));
+```
+
+</td>
+<td>
+
+```cpp
+auto fn_ptr = lambda::pointer_to([&]{/*...*/});
+some_c_function(fn_ptr);
+```
+
+</td>
+</tr>
+</table>
+
+
+**Q:** Are there alternatives to MSVC?  
+**A:** Yes! I'd recommend to just use clang-cl
