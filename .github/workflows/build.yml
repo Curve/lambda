@@ -31,7 +31,7 @@ jobs:
         run: "./build/lambda_tests"
 
   test-windows:
-    runs-on: windows-2022
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -44,7 +44,7 @@ jobs:
       - name: Compile
         run: >
           mkdir build && cd build
-          && cmake .. -Dlambda_tests=ON 
+          && cmake .. -Dlambda_tests=ON -T ClangCL -A x64 
           && cmake --build . --config Debug
 
       - name: Run Tests
