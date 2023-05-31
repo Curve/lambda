@@ -48,10 +48,10 @@ extern "C" void some_c_function(void (*callback)(int a, void* user_data), void* 
 std::string some_string;
 auto user_data = lambda::user_data(some_string);
 
-some_c_function(+[](int a, void* data) {
-    auto &[some_string] = decltype(user_data)::from(data);
+some_c_function([](int a, void* data) {
+    auto &[some_string] = decltype(user_data)::from(data).get();
     some_string = "Easy user-data!";
-}, &user_data);
+}, user_data);
 ```
 
 ---
