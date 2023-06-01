@@ -49,7 +49,7 @@ std::string some_string;
 auto user_data = lambda::user_data(some_string);
 
 some_c_function([](int a, void* data) {
-    auto &[some_string] = decltype(user_data)::from(data).get();
+    auto &[some_string] = decltype(user_data)::from(data).tuple();
     some_string = "Easy user-data!";
 }, user_data);
 ```
