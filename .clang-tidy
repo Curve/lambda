@@ -31,8 +31,6 @@ Checks: "*,\
   -cppcoreguidelines-avoid-non-const-global-variables,\
   -readability-function-cognitive-complexity,\
   -cppcoreguidelines-interfaces-global-init,\
-  -modernize-loop-convert,\
-  -modernize-avoid-c-arrays,\
   -cppcoreguidelines-avoid-c-arrays,\
   -cert-env33-c,\
   -abseil-*,\
