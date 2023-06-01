@@ -54,6 +54,8 @@ some_c_function([](int a, void* data) {
 }, user_data);
 ```
 
+> For more examples, and some useful comments, you might want to take a look at the [tests](tests/)!
+
 ---
 
 <div align="center"> 
