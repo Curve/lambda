@@ -7,12 +7,7 @@ extern "C" void some_c_function(void (*callback)(const char *a, int b))
     callback("test", 1337);
 }
 
-extern "C" void some_c_function_with_user_data(void (*callback)(const char *a, int b, void *user_data), void *user_data)
-{
-    callback("test", 1337, user_data);
-}
-
-TEST_CASE("Basic usage is tested", "[Basic]")
+TEST_CASE("Lambda utilities are tested", "[Lambda]")
 {
     int test = 0;
 
@@ -46,20 +41,9 @@ TEST_CASE("Basic usage is tested", "[Basic]")
 
     REQUIRE(test == 3);
 
-    auto user_data = lambda::user_data(test);
+    static_assert(lambda::detail::is_capture_lambda<decltype([&] {})>);
+    static_assert(lambda::detail::is_capture_lambda<decltype([=] {})>);
 
-    some_c_function_with_user_data(
-        [](const char *, int, void *data) {
-            auto &[test] = decltype(user_data)::from(data).get();
-            test = 4;
-        },
-        user_data);
-
-    REQUIRE(test == 4);
-
-    static_assert(lambda::detail::is_lambda<decltype([&] {})>);
-    static_assert(lambda::detail::is_lambda<decltype([=] {})>);
-
-    static_assert(not lambda::detail::is_lambda<decltype([] {})>);
-    static_assert(not lambda::detail::is_lambda<std::function<void(const char *, int)>>);
+    static_assert(not lambda::detail::is_capture_lambda<decltype([] {})>);
+    static_assert(not lambda::detail::is_capture_lambda<std::function<void(const char *, int)>>);
 }
