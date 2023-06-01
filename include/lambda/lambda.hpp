@@ -14,56 +14,23 @@ namespace lambda
         };
 
         template <typename Lambda, typename Return, typename Args>
-        concept invocable_lambda = not is_function<Lambda> and not std::is_copy_assignable_v<Lambda> and //
-                                   requires(Args args) {
-                                       []<typename... T>(std::tuple<T...> &)
-                                           requires std::same_as<std::invoke_result_t<Lambda, T...>, Return>
-                                       {
-                                       }(args);
-                                   };
+        concept invocable_lambda = requires(Args args) {
+            requires not is_function<Lambda>;
+            requires not std::is_copy_assignable_v<Lambda>;
+            []<typename... T>(std::tuple<T...> &)
+                requires std::same_as<std::invoke_result_t<Lambda, T...>, Return>
+            {
+            }(args);
+        };
 
         template <typename Lambda>
-        concept is_lambda = invocable_lambda<Lambda, boost::callable_traits::return_type_t<Lambda>,
-                                             boost::callable_traits::args_t<Lambda>>;
-
-        template <typename... T>
-        struct user_data : std::tuple<T...>
-        {
-            using std::tuple<T...>::tuple;
-
-          public:
-            std::tuple<T...> &get()
-            {
-                return *static_cast<std::tuple<T...> *>(this);
-            }
-
-            void *ptr()
-            {
-                return reinterpret_cast<void *>(this);
-            }
-
-          public:
-            operator void *()
-            {
-                return ptr();
-            }
-
-            operator std::tuple<T...> &()
-            {
-                return get();
-            }
-
-          public:
-            static user_data &from(void *data)
-            {
-                return *reinterpret_cast<user_data *>(data);
-            }
-        };
+        concept is_capture_lambda = invocable_lambda<Lambda, boost::callable_traits::return_type_t<Lambda>,
+                                                     boost::callable_traits::args_t<Lambda>>;
     } // namespace detail
 
     template <typename Return, typename Args, typename Lambda>
         requires detail::invocable_lambda<Lambda, Return, Args>
-    auto pointer_to(Lambda &&lambda)
+    [[nodiscard]] auto pointer_to(Lambda &&lambda)
     {
         static auto static_lambda = std::forward<Lambda>(lambda);
 
@@ -77,22 +44,16 @@ namespace lambda
     template <typename Signature, typename Lambda>
         requires detail::invocable_lambda<Lambda, boost::callable_traits::return_type_t<Signature>,
                                           boost::callable_traits::args_t<Signature>>
-    auto pointer_to(Lambda &&lambda)
+    [[nodiscard]] auto pointer_to(Lambda &&lambda)
     {
         return pointer_to<boost::callable_traits::return_type_t<Signature>, boost::callable_traits::args_t<Signature>,
                           Lambda>(std::forward<Lambda>(lambda));
     }
 
     template <typename Lambda>
-        requires detail::is_lambda<Lambda>
-    auto pointer_to(Lambda &&lambda)
+        requires detail::is_capture_lambda<Lambda>
+    [[nodiscard]] auto pointer_to(Lambda &&lambda)
     {
         return pointer_to<Lambda, Lambda>(std::forward<Lambda>(lambda));
-    }
-
-    template <typename... T>
-    auto user_data(T &&...args)
-    {
-        return detail::user_data<T...>{std::forward<T>(args)...};
     }
 } // namespace lambda
